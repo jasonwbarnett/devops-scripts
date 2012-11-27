@@ -14,7 +14,10 @@ for DIR in `find /proc/ -maxdepth 1 -type d | egrep "^/proc/[0-9]+"`;do
         let SUM=$SUM+$SWAP
     done
 
-    echo "PID=$PID - Swap used: $SUM - ( $PROGNAME )"
+    if [[ $SUM -gt 0 ]];then
+        echo "PID=$PID - Swap used: $SUM - ($PROGNAME)"
+    fi
+
     let OVERALL=$OVERALL+$SUM
     SUM=0
 done
