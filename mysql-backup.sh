@@ -7,7 +7,7 @@
 ## This script backs up all mysql databases into the directory of your choosing.
 ## It also rotates the backups and keeps the last 3 days of backups.
 ##
-## This script assumes that you're running it as root and that the MySQL credentials being used are the localhost.
+## This script assumes that you're running it as root and that the MySQL credentials being used are @localhost
 
 
 
