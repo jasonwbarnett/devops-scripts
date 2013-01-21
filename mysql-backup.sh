@@ -74,10 +74,10 @@ function update_config {
     config_value=$(echo $1 | awk -F= '{print $2}')
 
     [[ ! -d ${HOME}/.config/mysql-backup ]] && mkdir -p ${HOME}/.config/mysql-backup
-    chmod 700 ${HOME}/.config/mysql-backup
+    chmod 0700 ${HOME}/.config/mysql-backup
 
     [[ ! -e ${HOME}/.config/mysql-backup/config ]] && touch ${HOME}/.config/mysql-backup/config
-    chmod 600 ${HOME}/.config/mysql-backup/config
+    chmod 0600 ${HOME}/.config/mysql-backup/config
 
     sed -i "/^${config_property}=/d" ${HOME}/.config/mysql-backup/config
     echo "${config_property}=${config_value}" >> ${HOME}/.config/mysql-backup/config
@@ -148,8 +148,8 @@ HOME=/root
 # Check for backup destination, create it if it doesn't exist, and set the correct permissions
 [[ -n ${BACKUP_DEST} ]] || get_backup_destination
 [[ ! -d ${BACKUP_DEST} ]] && mkdir -p ${BACKUP_DEST}
-chown root:root -R $DEST
-chmod 0700 $DEST
+chown root:root -R ${BACKUP_DEST}
+chmod 0700 ${BACKUP_DEST}
 
 # Locate gzip binary and try to use pigz (multi-threaded gzip), or fallback and use gzip
 GZIP=`which pigz`
