@@ -71,7 +71,7 @@ function fail_msg {
 function update_config {
     local config_property config_value
     config_property=$(echo $1 | awk -F= '{print $1}')
-    config_value=$(echo $1 | awk -F= '{print $1}')
+    config_value=$(echo $1 | awk -F= '{print $2}')
 
     [[ ! -d ${HOME}/.config/mysql-backup ]] && mkdir -p ${HOME}/.config/mysql-backup
     chmod 700 ${HOME}/.config/mysql-backup
