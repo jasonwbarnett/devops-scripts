@@ -142,7 +142,7 @@ HOME=/root
 [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PASS} ]] && check_mysql_credentials || get_mysql_credentials
 
 # Should we dump routines?
-[[ -n ${ROUTINES} ]] || ask_about_routines
+[[ -n ${ROUTINES} && (${ROUTINES} == "true" || ${ROUTINES} == "false") ]] || ask_about_routines
 [[ ${ROUTINES} == "true" ]] && ROUTINES='--routines' || ROUTINES=
 
 # Check for backup destination, create it if it doesn't exist, and set the correct permissions
@@ -153,11 +153,11 @@ chmod 0700 ${BACKUP_DEST}
 
 # Locate gzip binary and try to use pigz (multi-threaded gzip), or fallback and use gzip
 GZIP=`which pigz 2> /dev/null`
-[[ -z $GZIP ]] && { GZIP=`which gzip 2> /dev/null`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "      This is not a big deal, pigz simply speeds up the backup process."; }
+[[ -z ${GZIP} ]] && { GZIP=`which gzip 2> /dev/null`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "      This is not a big deal, pigz simply speeds up the backup process."; }
 
 # Locate mysqldump binary
 MYSQLDUMP=`which mysqldump 2> /dev/null`
-[[ -z $MYSQLDUMP ]] && { err_msg "Unable to locate \"mysqldump\". Make sure it's in your \$PATH."; exit 1; }
+[[ -z ${MYSQLDUMP} ]] && fail_msg "Unable to locate \"mysqldump\". Make sure it's in your \$PATH."
 
 # Get a list of all databases
 DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | egrep -v '^(information_schema)$')"
