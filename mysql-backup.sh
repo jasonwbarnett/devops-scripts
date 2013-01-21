@@ -56,15 +56,15 @@ function ask_yes_no {
 }
 
 function msg {
-    echo $1
+    echo "$1"
 }
 
 function err_msg {
-    echo $1 1>&2
+    echo "$1" 1>&2
 }
 
 function fail_msg {
-    echo $1 1>&2
+    echo "$1" 1>&2
     exit 1
 }
 
