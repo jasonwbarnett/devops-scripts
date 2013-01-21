@@ -2,6 +2,20 @@
 # Author: Jason Barnett <J@sonBarnett.com>
 MYSQL_BACKUP_VERSION=1.0
 
+############
+## README ##
+############
+##
+##  About the only assumption this script makes is that it is run by root and that root's home is /root.
+##
+##  I suggest setting up a cronjob with this script and putting it like so:
+##    0 2 * * * /path/to/mysql-backup.sh > /dev/null
+##
+##  The reason behind my suggestion is that most people have (or sould have) cron setup so that it only
+##  emails them when there is any output (either STDOUT or ERROUT)
+## 
+###########
+
 HOME=/root
 
 # Check if mysql server even exists on the machine and exit if it's not.
@@ -39,6 +53,21 @@ function fail_msg {
     exit 1
 }
 
+function update_config {
+    local config_property config_value
+    config_property=$(echo $1 | awk -F= '{print $1}')
+    config_value=$(echo $1 | awk -F= '{print $1}')
+
+    [[ ! -d ${HOME}/.config/mysql-backup ]] && mkdir -p ${HOME}/.config/mysql-backup
+    chmod 700 ${HOME}/.config/mysql-backup
+
+    [[ ! -e ${HOME}/.config/mysql-backup/config ]] && touch ${HOME}/.config/mysql-backup/config
+    chmod 600 ${HOME}/.config/mysql-backup/config
+
+    sed -i "/^${config_property}=/d" ${HOME}/.config/mysql-backup/config
+    echo "${config_property}=${config_value}" >> ${HOME}/.config/mysql-backup/config
+}
+
 function get_mysql_credentials {
     MYSQL_USER=$(ask_question "MySQL Username")
     [[ -z $MYSQL_USER ]] && exit 1
@@ -49,12 +78,9 @@ function get_mysql_credentials {
     }
 
     check_mysql_credentials
-    mkdir -p ${HOME}/.config/mysql-backup
-    chmod 700 ${HOME}/.config/mysql-backup
-    echo "MYSQL_USER=${MYSQL_USER}" > ${HOME}/.config/mysql-backup/config
-    echo "MYSQL_HOST=${MYSQL_HOST}" >> ${HOME}/.config/mysql-backup/config
-    echo "MYSQL_PASS=${MYSQL_PASS}" >> ${HOME}/.config/mysql-backup/config
-    chmod 600 ${HOME}/.config/mysql-backup/config
+    update_config "MYSQL_USER=${MYSQL_USER}"
+    update_config "MYSQL_HOST=${MYSQL_HOST}"
+    update_config "MYSQL_PASS=${MYSQL_PASS}"
 }
 
 function check_mysql_credentials {
@@ -71,13 +97,19 @@ function check_mysql_credentials {
     rm -f ${temp_file}
 }
 
-function mysql_routines_check {
-   [[ -z $ROUTINES ]] && ROUTINES=$(ask_yes_no "Dump stored routines?")
-   [[ ${ROUTINES} == "true" ]] && ROUTINES='--routines' || ROUTINES=
+function ask_about_routines {
+    ROUTINES=$(ask_yes_no "Dump stored routines?")
+    update_config "ROUTINES=${ROUTINES}"
 }
 
-function choose_backup_destination {
-    echo "I need to write this..."
+function get_backup_destination {
+    BACKUP_DEST=$(ask_question "Choose a backup destination, absolute path only")
+
+    while [[ $(echo ${BACKUP_DEST} | egrep '^((?:\/[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*(?:\-[a-zA-Z0-9]+)*)+)$') == "" ]];do
+        BACKUP_DEST=$(ask_question "I said absolute path only...")
+    done
+
+    update_config "BACKUP_DEST=${BACKUP_DEST}"
 }
 
 
@@ -86,59 +118,53 @@ function choose_backup_destination {
 # Check if mysql server even exists on the machine and exit if it's not.
 [[ -x /usr/bin/mysqld_safe ]] || { echo "MySQL-Server is not installed on this machine."; exit 0; }
 
-# Load config file:
+# Load config
 [[ -e ${HOME}/.config/mysql-backup/config ]] && . ${HOME}/.config/mysql-backup/config
 
+# Check for MySQL credentials
 [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PASS} ]] && check_mysql_credentials || get_mysql_credentials
 
-# Backup desination directory, soon to replace with function later...
-DEST="/opt/dbbackups"
+# Should we dump routines?
+[[ -n ${ROUTINES} ]] || ask_about_routines
+[[ ${ROUTINES} == "true" ]] && ROUTINES='--routines' || ROUTINES=
 
-## Try to use pigz (multi-threaded gzip), or fallback and use gzip
+# Check for backup destination, create it if it doesn't exist, and set the correct permissions
+[[ -n ${BACKUP_DEST} ]] || get_backup_destination
+[[ ! -d ${BACKUP_DEST} ]] && mkdir -p ${BACKUP_DEST}
+chown root:root -R $DEST
+chmod 0700 $DEST
+
+# Locate gzip binary and try to use pigz (multi-threaded gzip), or fallback and use gzip
 GZIP=`which pigz`
 [[ -z $GZIP ]] && { GZIP=`which gzip`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "        This is not a big deal, pigz simply speeds up the backup process."; }
 
+# Locate mysqldump binary
 MYSQLDUMP=`which mysqldump`
 [[ -z $MYSQLDUMP ]] && { err_msg "Unable to locate \"mysqldump\". Make sure it's in your \$PATH."; exit 1; }
 
-MAIL=`which mutt`
-[[ -z $MAIL ]] && MAIL=`which mail`
-[[ -z $MAIL ]] && err_msg "Couldn't find mutt or mail. Therefore we cannot send an email if the backup fails."
-
-
-# Create destination if it does not exist.
-[ ! -d $DEST ] && mkdir -p $DEST
-
-# Only root can access it!
-chown root:root -R $DEST
-chmod 0750 $DEST
-
-# Get all database list first
+# Get a list of all databases
 DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | egrep -v '^(information_schema)$')"
 mysql_status=$?
 
+[[ $mysql_status != "0" ]] && fail_msg "There was an issue grabbing a complete list of databases to backup."
+
 backup_failed=
-for db in $DBs;do
-    FILE="$DEST/$db.sql.gz"
-    [ -f $FILE.2 ] && rm -f $FILE.2
-    [ -f $FILE.1 ] && mv $FILE.1 $FILE.2
-    [ -f $FILE.0 ] && mv $FILE.0 $FILE.1
-    [ -f $FILE ] && mv $FILE $FILE.0
+for db in ${DBs};do
+    FILE="${BACKUP_DEST}/${db}.sql.gz"
+    [ -f ${FILE}.2 ] && rm -f ${FILE}.2
+    [ -f ${FILE}.1 ] && mv ${FILE}.1 ${FILE}.2
+    [ -f ${FILE}.0 ] && mv ${FILE}.0 ${FILE}.1
+    [ -f ${FILE} ] && mv ${FILE} ${FILE}.0
     echo -n "Backing up $db... "
-    $MYSQLDUMP -u${mysql_user} -p${mysql_pass} -hlocalhost $ROUTINES -B $db | $GZIP -9 > $FILE
+    ${MYSQLDUMP} -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} $ROUTINES -B ${db} | $GZIP -9 > ${FILE}
     if [[ $? == "0" ]];
         then
-            echo Success!
+            msg Success!
         else
-            echo Failed!
+            err_msg Failed!
             backup_failed=true
             failed_dbs="$db $failed_dbs"
     fi
 done
 
-
-if [[ $mysql_status != "0" ]];then
-    fail_msg "There was an issue grabbing a complete list of databases to backup."
-elif [[ $backup_failed == "true" ]];then
-    fail_msg "There was an issue backing up the following databases: ${failed_dbs}"
-fi
+[[ $backup_failed == "true" ]] && fail_msg "There was an issue backing up the following databases: ${failed_dbs}"
