@@ -120,7 +120,7 @@ function ask_about_routines {
 function get_backup_destination {
     BACKUP_DEST=$(ask_question "Choose a backup destination, absolute path only")
 
-    while [[ $(echo ${BACKUP_DEST} | egrep '^((?:\/[a-zA-Z0-9]+(?:_[a-zA-Z0-9]+)*(?:\-[a-zA-Z0-9]+)*)+)$') == "" ]];do
+    while [[ $(echo ${BACKUP_DEST} | egrep '^((/[a-zA-Z0-9]+(_[a-zA-Z0-9]+)*(-[a-zA-Z0-9]+)*)+)$') == "" ]];do
         BACKUP_DEST=$(ask_question "I said absolute path only...")
     done
 
