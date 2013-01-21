@@ -8,12 +8,21 @@ MYSQL_BACKUP_VERSION=1.0
 ##
 ##  About the only assumption this script makes is that it is run by root and that root's home is /root.
 ##
-##  I suggest setting up a cronjob with this script and putting it like so:
+##  Simply run this script as is once and it should ask all the right questions and place them in an easy
+##  to reference config file so it never needs to ask again.
+##
+##  I suggest setting up a cronjob with this script once you've confirmed it's running as expecter
+##  and then putting it in your crontab like so:
+##
 ##    0 2 * * * /path/to/mysql-backup.sh > /dev/null
 ##
 ##  The reason behind my suggestion is that most people have (or sould have) cron setup so that it only
-##  emails them when there is any output (either STDOUT or ERROUT)
-## 
+##  emails them when there is any output (both stdout or stderr) from the script/command/etc... I've
+##  written this script to output to stderr when you need to be notified by email about a problem, e.g.
+##  it's unable to grab a full list of databases, or it can't authenticate, etc... All of the stdout output
+##  can be safely ignored. In order for this to work properly though, it requires cron daemon to be configured
+##  properly so you can receive email from it when things go awry.
+##
 ###########
 
 HOME=/root
