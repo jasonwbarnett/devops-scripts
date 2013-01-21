@@ -153,7 +153,7 @@ chmod 0700 ${BACKUP_DEST}
 
 # Locate gzip binary and try to use pigz (multi-threaded gzip), or fallback and use gzip
 GZIP=`which pigz 2> /dev/null`
-[[ -z $GZIP ]] && { GZIP=`which gzip 2> /dev/null`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "        This is not a big deal, pigz simply speeds up the backup process."; }
+[[ -z $GZIP ]] && { GZIP=`which gzip 2> /dev/null`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "      This is not a big deal, pigz simply speeds up the backup process."; }
 
 # Locate mysqldump binary
 MYSQLDUMP=`which mysqldump 2> /dev/null`
