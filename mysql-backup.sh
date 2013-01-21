@@ -25,10 +25,8 @@ MYSQL_BACKUP_VERSION=1.0
 ##
 ###########
 
-HOME=/root
-
-# Check if mysql server even exists on the machine and exit if it's not.
-[[ -x /usr/bin/mysqld_safe ]] || { echo "MySQL-Server is not installed on this machine."; exit 0; }
+## Functions ##
+###############
 
 function ask_question {
     question=$1
@@ -124,10 +122,12 @@ function get_backup_destination {
 
 ## MAIN SCRIPT ##
 #################
+
 # Check if mysql server even exists on the machine and exit if it's not.
 [[ -x /usr/bin/mysqld_safe ]] || { echo "MySQL-Server is not installed on this machine."; exit 0; }
 
-# Load config
+# Set HOME and load config (We set HOME here because most likely we're running from the crontab and HOME isn't set)
+HOME=/root
 [[ -e ${HOME}/.config/mysql-backup/config ]] && . ${HOME}/.config/mysql-backup/config
 
 # Check for MySQL credentials
