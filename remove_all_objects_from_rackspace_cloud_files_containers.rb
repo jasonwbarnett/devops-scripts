@@ -26,13 +26,20 @@ containers.each do |container|
   puts "-----------------------------------------"
   puts
   container.files.each do |file|
-    ## I had to implement a retry because Rackspace Cloud Files continued to give random 404 errors, this fixed it.
-    tries ||= 5
+    ## I had to implement a retry because Rackspace Cloud Files kept giving me random errors, this is a work around.
+    max_retries ||= 5
+    try = 0
     puts "(#{current} of #{total}) Removing #{file.key}"
     begin
       file.destroy
-    rescue NotFound => e
-      retry unless (tries -= 1).zero?
+    rescue Excon::Errors::NotFound, Excon::Errors::Timeout, Fog::Storage::Rackspace::NotFound => e
+      if try == max_retries
+        puts "Unable to remove file..."
+      else
+        try += 1
+        puts "Retry \##{try}"
+        retry
+      end
     else
       current -= 1
     end
