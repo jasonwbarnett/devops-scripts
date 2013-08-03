@@ -9,12 +9,12 @@ service = Fog::Storage.new({
     :rackspace_api_key   => 'your_api_key',            # Your Rackspace API key
     :rackspace_region    => :ord,                      # Defaults to :dfw
     :connection_options  => {},                        # Optional
-    :rackspace_servicenet => true                      # Optional
+    :rackspace_servicenet => true                      # Optional, only use if you're the Rackspace Region Data Center
 })
 
 containers = service.directories.select do |s|
-  s.count > 0                    # Find all containers that aren't empty
-  s.key =~ /cloudfiles_backups/
+  s.count > 0                    # Select all containers that aren't empty
+  s.key =~ /cloudfiles_backups/  # Select all containers that match a certain name
 end
 
 containers.each do |container|
