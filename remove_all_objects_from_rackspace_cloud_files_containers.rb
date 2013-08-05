@@ -1,7 +1,62 @@
 #!/usr/bin/env ruby
 # Author: Jason Barnett <J@sonBarnett.com>
 
-require 'fog'
+begin
+  require 'fog'
+rescue LoadError
+  puts "You need the fog gem..."
+  puts "$ gem install fog"
+  exit 1
+end
+require 'optparse'
+
+options = {}
+optparse = OptionParser.new do |opts|
+  opts.banner = "Usage: #{File.basename($0)} [options]"
+
+  opts.on("-u", "--username",
+    "Rackspace Username"
+  ) { |value| options[:username] = value }
+
+  opts.on("--api-key",
+    "Rackspace API Key"
+  ) { |value| options[:api_key] = value }
+
+  opts.on("--delete-empty",
+    "Deletes all empty containers, regardless of name."
+  ) { |value| options[:delete_empty] = true }
+
+  opts.on("--dir-regexp REGEXP",
+    "Deletes all files from containers that match regexp."
+  ) { |value| options[:dir_regexp] = value }
+
+  opts.on("-f", "--force",
+    "Omits all prompts and just moves forward without asking anything. Only use if you're sure!"
+  ) { |value| options[:force] = true }
+
+  opts.on("--debug",
+    "Enables some helpful debugging output."
+  ) { |value| options[:debug] = true }
+
+  opts.on("-h", "--help", "Display this help message.") do
+    puts opts
+    exit 2
+  end
+end
+
+
+begin
+  optparse.parse!
+rescue OptionParser::MissingArgument
+  puts "You're missing an argument...\n\n"
+  puts optparse
+  exit
+end
+
+
+p options if options[:debug] == true
+p ARGV    if options[:debug] == true
+
 
 service = Fog::Storage.new({
     :provider            => 'Rackspace',               # Rackspace Fog provider
@@ -13,8 +68,7 @@ service = Fog::Storage.new({
 })
 
 containers = service.directories.select do |s|
-  s.count > 0                    # Select all containers that aren't empty
-  s.key =~ /cloudfiles_backups/  # Select all containers that match a certain name
+  s.count > 0 and s.key =~ /cloudfiles_backups/  # Select all containers that aren't empty and their name matches the regex
 end
 
 containers.each do |container|
