@@ -3,6 +3,42 @@
 
 require 'fog'
 
+def delete_file(container, file_num, max_tries)
+  max_retries ||= max_tries
+  try = 0
+  puts "(#{file_num} of #{container.files.count}) Removing #{container.files[file_num].key}"
+  begin
+    container.files[file_num].destroy
+  rescue Excon::Errors::NotFound, Excon::Errors::Timeout, Fog::Storage::Rackspace::NotFound => e
+    if try == max_retries
+      puts "Unable to remove file..."
+    else
+      try += 1
+      puts "Retry \##{try}"
+      retry
+    end
+  end
+end
+
+def equal_div(first, last, num_of_groups)
+  total      = last - first
+  group_size = total / num_of_groups + 1
+
+  top    = first
+  bottom = top + group_size
+  blocks = 1.upto(num_of_groups).inject([]) do |result, x|
+    bottom = last if bottom > last
+    result << [ top, bottom ]
+
+    top    += group_size + 1
+    bottom =  top + group_size
+
+    result
+  end
+
+  blocks
+end
+
 service = Fog::Storage.new({
     :provider            => 'Rackspace',               # Rackspace Fog provider
     :rackspace_username  => 'your_rackspace_username', # Your Rackspace Username
@@ -13,9 +49,12 @@ service = Fog::Storage.new({
 })
 
 containers = service.directories.select do |s|
-  s.count > 0                    # Select all containers that aren't empty
-  s.key =~ /cloudfiles_backups/  # Select all containers that match a certain name
+  s.key =~ /^some_regex/  # Select all containers that match a certain name
 end
+
+TOT_THREADS = 4
+threads     = []
+
 
 containers.each do |container|
   total   = container.count
@@ -25,23 +64,21 @@ containers.each do |container|
   puts "-- Removing _ALL_ objects from #{container.key}"
   puts "-----------------------------------------"
   puts
-  container.files.each do |file|
-    ## I had to implement a retry because Rackspace Cloud Files kept giving me random errors, this is a work around.
-    max_retries ||= 5
-    try = 0
-    puts "(#{current} of #{total}) Removing #{file.key}"
-    begin
-      file.destroy
-    rescue Excon::Errors::NotFound, Excon::Errors::Timeout, Fog::Storage::Rackspace::NotFound => e
-      if try == max_retries
-        puts "Unable to remove file..."
-      else
-        try += 1
-        puts "Retry \##{try}"
-        retry
+
+  #puts "container.files.count: #{container.files.count}"
+  
+  ## separates the number of files into equal groups to distribute to each thread
+  mygroups = equal_div(0, container.files.count - 1, TOT_THREADS)
+
+  0.upto(TOT_THREADS - 1) do |thread|
+    threads << Thread.new([ container, mygroups[thread] ]) { |tObject|
+      tObject[1][0].upto(tObject[1][1]) do |x|
+        delete_file(tObject[0], x, 5)
       end
-    else
-      current -= 1
-    end
+    }
+
   end
+  threads.each { |aThread|  aThread.join }
+  puts "Deleting #{container.key}"
+  container.destroy
 end
