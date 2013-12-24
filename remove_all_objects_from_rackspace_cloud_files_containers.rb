@@ -11,7 +11,7 @@ def delete_file(container, file_num, max_tries)
     container.files[file_num].destroy
   rescue Excon::Errors::NotFound, Excon::Errors::Timeout, Fog::Storage::Rackspace::NotFound => e
     if try == max_retries
-      puts "Unable to remove file..."
+      $stderr.puts e.message
     else
       try += 1
       puts "Retry \##{try}"
@@ -40,16 +40,16 @@ def equal_div(first, last, num_of_groups)
 end
 
 service = Fog::Storage.new({
-    :provider            => 'Rackspace',               # Rackspace Fog provider
-    :rackspace_username  => 'your_rackspace_username', # Your Rackspace Username
-    :rackspace_api_key   => 'your_api_key',            # Your Rackspace API key
-    :rackspace_region    => :ord,                      # Defaults to :dfw
-    :connection_options  => {},                        # Optional
-    :rackspace_servicenet => true                      # Optional, only use if you're the Rackspace Region Data Center
+    :provider             => 'Rackspace',               # Rackspace Fog provider
+    :rackspace_username   => 'your_rackspace_username', # Your Rackspace Username
+    :rackspace_api_key    => 'your_api_key',            # Your Rackspace API key
+    :rackspace_region     => :ord,                      # Defaults to :dfw
+    :connection_options   => {},                        # Optional
+    :rackspace_servicenet => false                      # Optional, only use if you're the Rackspace Region Data Center
 })
 
 containers = service.directories.select do |s|
-  s.key =~ /^some_regex/  # Select all containers that match a certain name
+  s.key =~ /^some_regex/  # Only delete containers that match the regexp
 end
 
 TOT_THREADS = 4
