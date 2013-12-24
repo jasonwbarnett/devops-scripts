@@ -57,8 +57,6 @@ threads     = []
 
 
 containers.each do |container|
-  total   = container.count
-  current = container.count
   puts
   puts "-----------------------------------------"
   puts "-- Removing _ALL_ objects from #{container.key}"
@@ -66,7 +64,7 @@ containers.each do |container|
   puts
 
   #puts "container.files.count: #{container.files.count}"
-  
+
   ## separates the number of files into equal groups to distribute to each thread
   mygroups = equal_div(0, container.files.count - 1, TOT_THREADS)
 
