@@ -16,6 +16,7 @@ begin
 rescue LoadError
   puts 'You must install the net-ldap gem!'
   puts ' $ gem install net-ldap'
+  exit
 end
 
 
