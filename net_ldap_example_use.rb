@@ -1,8 +1,23 @@
 #!/usr/bin/env ruby
-require 'net/ldap'
-
 # Author: Jason Barnett <J@sonBarnett.com>
 # This is an example on how to use Net::LDAP module.
+
+# I highly recommend installing the net-ldap gem using master on github
+# because of how old the version on rubygems.org is. Below is an overview
+# of how to build it from source:
+#
+# 1. git clone https://github.com/ruby-ldap/ruby-net-ldap.git
+# 2. cd ruby-net-ldap
+# 3. gem build net-ldap.gemspec     ## ignore all errors
+# 4. gem install net-ldap-0.5.0.gem ## the filename/version may be different.
+
+begin
+  require 'net/ldap'
+rescue LoadError
+  puts 'You must install the net-ldap gem!'
+  puts ' $ gem install net-ldap'
+end
+
 
 ## Main ##
 ##########
