@@ -160,7 +160,7 @@ MYSQLDUMP=`which mysqldump 2> /dev/null`
 [[ -z ${MYSQLDUMP} ]] && fail_msg "Unable to locate \"mysqldump\". Make sure it's in your \$PATH."
 
 # Get a list of all databases
-DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | egrep -v '^(information_schema)$')"
+DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | egrep -v '^(information_schema|performance_schema)$')"
 mysql_status=$?
 
 [[ $mysql_status != "0" ]] && fail_msg "There was an issue grabbing a complete list of databases to backup."
