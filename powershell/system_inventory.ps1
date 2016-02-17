@@ -58,13 +58,14 @@ $networkinfo  = Invoke-Command -Session $session -ScriptBlock {
   return $networkinfo
 }
 
-$Description = $networkinfo.description
+$Description = $networkinfo.Description
 $IPAddress = $networkinfo.IPAddress
-$DHCPServer = $networkinfo.dhcpserver
+$DHCPServer = $networkinfo.DHCPServer
 $DefaultIPGateway = $networkinfo.DefaultIPGateway
 $DNSDomain = $networkinfo.DNSDomain
 $DHCPEnabled = $networkinfo.DHCPEnabled
 $MACAddress = $networkinfo.MACAddress
+$DNSServerSearchOrder = $networkinfo.DNSServerSearchOrder -join ","
 
 ######################
 # Firewall Config
