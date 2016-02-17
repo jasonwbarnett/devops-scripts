@@ -162,11 +162,17 @@ $local_admins | Out-Default
 
 $services = Invoke-Command -Session $session -ScriptBlock {
   $services = Get-Service
+  $services_details = Get-WmiObject -Class Win32_Service -Property Name, Status, ExitCode, PathName, ServiceType, StartMode, Caption, Started, StartName, State, SystemName
+  $det = new-object PSCustomObject -Property @{
+    services = $services
+    services_details = $services_details
+  }
 
-  return $services
+  return $det
 }
 
-$services | Out-Default
+$services.services[0] | Format-Table *
+$services.services_details | Format-Table -Property Name, Status, ServiceType, StartMode, StartName, State
 
 ######################
 # Drive Mappings
