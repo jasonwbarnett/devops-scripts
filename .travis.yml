@@ -1,0 +1,8 @@
+language: minimal
+before_script:
+  - git clone https://github.com/bats-core/bats-core.git ~/bats-core
+  - pushd ~/bats-core
+  - ./install.sh $HOME
+  - popd
+script:
+  - bats --pretty test
