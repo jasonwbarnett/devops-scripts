@@ -68,3 +68,12 @@ function lstrip {
 function strip {
   lstrip | rstrip
 }
+
+function gsub {
+  pattern=$1
+  replacement=$2
+
+  if [[ -n $pattern ]] && [[ -n $replacement ]]; then
+    sed "s|$pattern|$replacement|g"
+  fi
+}
