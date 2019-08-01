@@ -15,6 +15,29 @@ Asks a yes/no question and returns `true` or `false`. It will continue to ask
 the user for input until they respond with one of the folllwing: `y`, `yes`,
 `n` or `no`.
 
+```bash
+#!/bin/bash
+# filename: ask_yes_no_example.sh
+source master_functions.sh
+
+answer=$(ask_yes_no "Are you going to work today?")
+if [[ $answer == true ]]; then
+  echo "How wonderful! Have a great day off."
+else
+  echo "How sad :( -- try and make the best of it"
+fi
+```
+
+```text
+bash ./ask_yes_no_example.sh
+Are you going to work today?: [y/n] y
+How wonderful! Have a great day off.
+
+$ bash ./ask_yes_no_example.sh
+Are you going to work today?: [y/n] n
+How sad :( -- try and make the best of it
+```
+
 ### downcase
 
 Replaces all uppercase letters with their lowercase counterparts.
