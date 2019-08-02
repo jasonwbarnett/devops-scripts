@@ -3,15 +3,15 @@
 I created this repo to keep track of extremely useful scripts and to hopefully
 add some benefit to others. Please feel free to fork / contribute.
 
-## master_functions.sh
+## master_functions.sh functions
 
 ### ask_question
 
-Asks a question and returns the user input.
+Asks a question and echoes the user input.
 
 ### ask_yes_no
 
-Asks a yes/no question and echos `true` or `false`. It will continue to ask
+Asks a yes/no question and echoes `true` or `false`. It will continue to ask
 the user for input until they respond with one of the folllwing: `y`, `yes`,
 `n` or `no`.
 
