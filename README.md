@@ -11,19 +11,9 @@ Asks a question and returns the user input.
 
 ### ask_yes_no
 
-Asks a yes/no question and returns `true` or `false`. It will continue to ask
+Asks a yes/no question and echos `true` or `false`. It will continue to ask
 the user for input until they respond with one of the folllwing: `y`, `yes`,
 `n` or `no`.
-
-```text
-bash ./examples/ask_yes_no.sh
-Are you going to work today?: [y/n] y
-How sad :( -- try and make the best of it
-
-$ bash ./examples/ask_yes_no.sh
-Are you going to work today?: [y/n] n
-How wonderful! Have a great day off.
-```
 
 ### downcase
 
