@@ -19,6 +19,13 @@ the user for input until they respond with one of the folllwing: `y`, `yes`,
 
 Replaces all uppercase letters with their lowercase counterparts.
 
+```bash
+#!/bin/bash
+
+echo "Hello Motto" | downcase
+# => hello motto
+```
+
 ### err_msg
 
 ### fail_msg
@@ -47,3 +54,10 @@ line feed, vertical tab, form feed, carriage return, space.
 ### upcase
 
 Replaces all lowercase letters with their uppercase counterparts.
+
+```bash
+#!/bin/bash
+
+echo "Hello Motto" | upcase
+# => HELLO MOTTO
+```
