@@ -1,18 +1,6 @@
 #!/bin/bash
 # Author: Jason Barnett <J@sonBarnett.com>
 
-############
-## README ##
-############
-##
-##  This is a compilation of useful functions in everyday sysadmin life.
-##
-###########
-
-
-## Functions ##
-###############
-
 function ask_question {
     local question
 
