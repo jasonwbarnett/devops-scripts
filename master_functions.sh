@@ -70,8 +70,8 @@ function strip {
 }
 
 function gsub {
-  pattern=$1
-  replacement=$2
+  local pattern=$1
+  local replacement=$2
 
   if [[ -n $pattern ]] && [[ -n $replacement ]]; then
     sed "s|$pattern|$replacement|g"
