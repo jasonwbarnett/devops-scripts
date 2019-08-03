@@ -33,7 +33,7 @@ function ask_yes_no {
 }
 
 function succ_or_fail {
-    [[ $? == 0 ]] && msg success! || msg failed!
+    [[ $? == 0 ]] && msg success! || err_msg failed!
 }
 
 function msg {
