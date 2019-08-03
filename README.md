@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/jasonwbarnett/devops-scripts.svg?branch=master)](https://travis-ci.org/jasonwbarnett/devops-scripts)
+
 # DevOps Scripts
 
 I created this repo to keep track of extremely useful scripts and to hopefully
