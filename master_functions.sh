@@ -45,7 +45,7 @@ function err_msg {
 }
 
 function fail_msg {
-    echo -e '\E[31m'"\033[1m${1}\033[0m" 1>&2
+    err_msg "${1}"
     exit 1
 }
 
