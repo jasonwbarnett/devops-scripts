@@ -28,7 +28,11 @@ echo "Hello Motto" | downcase
 
 ### err_msg
 
+This is a simple abstraction that wraps echo, higlights text in red and is redirected to stderr.
+
 ### fail_msg
+
+This is identical to err_msg except that it exits 1 after echoing the error message.
 
 ### gsub
 
@@ -44,6 +48,8 @@ echo " Hello Motto" | lstrip
 ```
 
 ### msg
+
+This is a simple abstraction that wraps echo.
 
 ### rstrip
 
