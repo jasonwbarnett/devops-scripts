@@ -36,11 +36,31 @@ echo "Hello Motto" | downcase
 
 Removes all leading whitespace. See also `rstrip` and `strip`.
 
+```bash
+#!/bin/bash
+
+echo " Hello Motto "
+# =>  Hello Motto 
+
+echo " Hello Motto " | lstrip
+# => Hello Motto 
+```
+
 ### msg
 
 ### rstrip
 
 Removes all trailing whitespace. See also `lstrip` and `strip`.
+
+```bash
+#!/bin/bash
+
+echo " Hello Motto "
+# =>  Hello Motto 
+
+echo " Hello Motto " | rstrip
+# =>  Hello Motto
+```
 
 ### strip
 
@@ -48,6 +68,16 @@ Removes all leading and trailing whitespace.
 
 Whitespace is defined as any of the following characters: null, horizontal tab,
 line feed, vertical tab, form feed, carriage return, space.
+
+```bash
+#!/bin/bash
+
+echo " Hello Motto "
+# =>  Hello Motto 
+
+echo " Hello Motto " | strip
+# => Hello Motto
+```
 
 ### succ_or_fail
 
