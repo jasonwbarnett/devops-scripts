@@ -14,26 +14,35 @@
 ###############
 
 function ask_question {
+    local question
+
     question=$1
-    read -p "$question: "
-    echo $REPLY
+    read -r -p "$question: "
+    echo "${REPLY}"
 }
 
 function ask_yes_no {
+    local question answer
+
     question=$1
-    read -p "$question: [y/n] "
-    local answer=$(echo $REPLY | downcase)
+    read -r -p "$question: [y/n] "
+    answer=$(echo "${REPLY}" | downcase)
 
     while [[ "${answer}" != "yes" && "${answer}" != "no" && "${answer}" != "y" && "${answer}" != "n" ]];do
-        read -p "y/n only please... $question: [y/n] "
-        answer=$(echo $REPLY | downcase)
+        read -r -p "y/n only please... $question: [y/n] "
+        answer=$(echo "${REPLY}" | downcase)
     done
 
     [[ "${answer}" == "yes" || "${answer}" == "y" ]] && echo true || echo false
 }
 
 function succ_or_fail {
-    [[ $? == 0 ]] && msg success! || err_msg failed!
+    # shellcheck disable=SC2181
+    if [[ $? == 0 ]]; then
+        msg success!
+    else
+        err_msg failed!
+    fi
 }
 
 function msg {
@@ -70,8 +79,10 @@ function strip {
 }
 
 function gsub {
-  local pattern=$1
-  local replacement=$2
+  local pattern replacement
+
+  pattern=$1
+  replacement=$2
 
   if [[ -n $pattern ]] && [[ -n $replacement ]]; then
     sed "s|$pattern|$replacement|g"
