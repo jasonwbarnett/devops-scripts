@@ -78,6 +78,8 @@ echo " Hello Motto " | strip
 
 ### succ_or_fail
 
+Echoes `success!` or `failed!` based on `$?`.
+
 ### upcase
 
 Replaces all lowercase letters with their uppercase counterparts.
