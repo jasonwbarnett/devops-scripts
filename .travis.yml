@@ -7,5 +7,5 @@ before_script:
   - sudo apt-get update
   - sudo apt-get install -y shellcheck
 script:
-  - shellcheck --shell=bash master_functions.sh
+  - shellcheck --shell=bash --exclude=SC2086,SC1090 ./{,**/}*.sh
   - bats --pretty test
