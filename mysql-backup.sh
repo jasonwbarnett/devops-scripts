@@ -1,6 +1,6 @@
 #!/bin/bash
 # Author: Jason Barnett <J@sonBarnett.com>
-MYSQL_BACKUP_VERSION=1.0
+export MYSQL_BACKUP_VERSION=1.0
 
 ############
 ## README ##
@@ -90,7 +90,7 @@ function ask_about_routines {
 function get_backup_destination {
     BACKUP_DEST=$(ask_question "Choose a backup destination, absolute path only")
 
-    while [[ $(echo ${BACKUP_DEST} | egrep '^((\/[a-zA-Z0-9]+(_[a-zA-Z0-9]+)*(\-[a-zA-Z0-9]+)*)+)$') == "" ]];do
+    while [[ $(echo ${BACKUP_DEST} | grep -E '^((\/[a-zA-Z0-9]+(_[a-zA-Z0-9]+)*(\-[a-zA-Z0-9]+)*)+)$') == "" ]];do
         BACKUP_DEST=$(ask_question "I said absolute path only...")
     done
 
@@ -109,7 +109,11 @@ HOME=/root
 [[ -e ${HOME}/.config/mysql-backup/config ]] && . ${HOME}/.config/mysql-backup/config
 
 # Check for MySQL credentials
-[[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PASS} ]] && check_mysql_credentials || get_mysql_credentials
+if [[ -n ${MYSQL_USER} && -n ${MYSQL_HOST} && -n ${MYSQL_PASS} ]]; then
+    check_mysql_credentials
+else
+    get_mysql_credentials
+fi
 
 # Should we dump routines?
 [[ -n ${ROUTINES} && (${ROUTINES} == "true" || ${ROUTINES} == "false") ]] || ask_about_routines
@@ -122,15 +126,15 @@ chown root:root -R ${BACKUP_DEST}
 chmod 0700 ${BACKUP_DEST}
 
 # Locate gzip binary and try to use pigz (multi-threaded gzip), or fallback and use gzip
-GZIP=`which pigz 2> /dev/null`
-[[ -z ${GZIP} ]] && { GZIP=`which gzip 2> /dev/null`; msg "INFO: You don't have pigz installed, using gzip instead."; msg "      This is not a big deal, pigz simply speeds up the backup process."; }
+GZIP=$(command -v pigz 2> /dev/null)
+[[ -z ${GZIP} ]] && { GZIP=$(command -v gzip 2> /dev/null); msg "INFO: You don't have pigz installed, using gzip instead."; msg "      This is not a big deal, pigz simply speeds up the backup process."; }
 
 # Locate mysqldump binary
-MYSQLDUMP=`which mysqldump 2> /dev/null`
+MYSQLDUMP=$(command -v mysqldump 2> /dev/null)
 [[ -z ${MYSQLDUMP} ]] && fail_msg "Unable to locate \"mysqldump\". Make sure it's in your \$PATH."
 
 # Get a list of all databases
-DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | egrep -v '^(information_schema|performance_schema)$')"
+DBs="$(mysql -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} -BNe 'show databases;' | grep -E -v '^(information_schema|performance_schema)$')"
 mysql_status=$?
 
 [[ $mysql_status != "0" ]] && fail_msg "There was an issue grabbing a complete list of databases to backup."
@@ -143,8 +147,7 @@ for db in ${DBs};do
     [ -f ${FILE}.0 ] && mv ${FILE}.0 ${FILE}.1
     [ -f ${FILE} ] && mv ${FILE} ${FILE}.0
     echo -n "Backing up $db... "
-    ${MYSQLDUMP} -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} $ROUTINES -B ${db} | $GZIP -9 > ${FILE}
-    if [[ $? == "0" ]];
+    if ${MYSQLDUMP} -u${MYSQL_USER} -h${MYSQL_HOST} -p${MYSQL_PASS} $ROUTINES -B ${db} | $GZIP -9 > ${FILE};
         then
             msg Success!
         else
